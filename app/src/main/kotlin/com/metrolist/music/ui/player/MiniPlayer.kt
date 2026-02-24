@@ -305,7 +305,7 @@ private fun NewMiniPlayer(
                 .offset { IntOffset(offsetXAnimatable.value.roundToInt(), 0) }
                 .clip(RoundedCornerShape(32.dp))
                 .then(
-                    if (backdrop != null) {
+                    if (backdrop != null && BuildConfig.USE_LIQUID_GLASS) {
                         Modifier.drawBackdrop(
                             backdrop = backdrop,
                             shape = { RoundedCornerShape(32.dp) },

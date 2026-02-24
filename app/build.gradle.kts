@@ -55,10 +55,17 @@ android {
             dimension = "glass"
             isDefault = true
             buildConfigField("Boolean", "USE_AGSL_SHADER", "true")
+            buildConfigField("Boolean", "USE_LIQUID_GLASS", "true")
         }
         create("classic") {
             dimension = "glass"
             buildConfigField("Boolean", "USE_AGSL_SHADER", "false")
+            buildConfigField("Boolean", "USE_LIQUID_GLASS", "true")
+        }
+        create("standard") {
+            dimension = "glass"
+            buildConfigField("Boolean", "USE_AGSL_SHADER", "false")
+            buildConfigField("Boolean", "USE_LIQUID_GLASS", "false")
         }
 
         create("foss") {
