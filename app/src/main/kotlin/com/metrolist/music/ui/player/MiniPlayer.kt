@@ -65,6 +65,8 @@ import android.graphics.RuntimeShader
 import android.os.Build
 import com.kyant.backdrop.effects.blur
 import com.kyant.backdrop.effects.effect
+import com.kyant.backdrop.effects.lens
+import com.metrolist.music.BuildConfig
 import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
@@ -308,8 +310,8 @@ private fun NewMiniPlayer(
                             backdrop = backdrop,
                             shape = { RoundedCornerShape(32.dp) },
                             effects = {
-                                blur(0f)
-                                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                                if (BuildConfig.USE_AGSL_SHADER && Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                                    blur(0f)
                                     val refractionHeightPx = with(density) { 28.dp.toPx() }
                                     val refractionAmountPx = with(density) { 67.dp.toPx() }
                                     val eccentricFactor = 0.5f
@@ -411,6 +413,12 @@ private fun NewMiniPlayer(
                                     shader.setFloatUniform("depthEffect", eccentricFactor)
                                     shader.setFloatUniform("chromaticAberration", dispersionIntensity)
                                     effect(RenderEffect.createRuntimeShaderEffect(shader, "content"))
+                                } else {
+                                    lens(
+                                        refractionHeight = with(density) { 28.dp.toPx() },
+                                        refractionAmount = with(density) { 67.dp.toPx() },
+                                        chromaticAberration = true
+                                    )
                                 }
                             },
                             onDrawSurface = {

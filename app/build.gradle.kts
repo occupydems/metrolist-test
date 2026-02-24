@@ -49,16 +49,24 @@ android {
         }
     }
 
-    flavorDimensions += listOf("abi", "variant")
+    flavorDimensions += listOf("abi", "variant", "glass")
     productFlavors {
-        // FOSS variant (default) - F-Droid compatible, no Google Play Services
+        create("agsl") {
+            dimension = "glass"
+            isDefault = true
+            buildConfigField("Boolean", "USE_AGSL_SHADER", "true")
+        }
+        create("classic") {
+            dimension = "glass"
+            buildConfigField("Boolean", "USE_AGSL_SHADER", "false")
+        }
+
         create("foss") {
             dimension = "variant"
             isDefault = true
             buildConfigField("Boolean", "CAST_AVAILABLE", "false")
         }
         
-        // GMS variant - with Google Cast support (requires Google Play Services)
         create("gms") {
             dimension = "variant"
             buildConfigField("Boolean", "CAST_AVAILABLE", "true")

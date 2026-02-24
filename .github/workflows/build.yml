@@ -17,9 +17,13 @@ permissions:
 
 jobs:
   build:
-    name: Build arm64 Release APK
+    name: Build ${{ matrix.glass }} arm64 Release APK
     if: github.actor != 'dependabot[bot]' && github.actor != 'renovate[bot]'
     runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        glass: [agsl, classic]
 
     steps:
       - uses: actions/checkout@v6
@@ -59,7 +63,10 @@ jobs:
         run: chmod +x gradlew
 
       - name: Build arm64 Release APK
-        run: ./gradlew --console=plain assembleArm64FossRelease -x lint -x lintVitalArm64FossRelease -x lintVitalAnalyzeArm64FossRelease --warning-mode summary
+        run: |
+          VARIANT="${{ matrix.glass }}"
+          CAPITALIZED="$(echo ${VARIANT:0:1} | tr '[:lower:]' '[:upper:]')${VARIANT:1}"
+          ./gradlew --console=plain assembleArm64Foss${CAPITALIZED}Release -x lint -x lintVitalArm64Foss${CAPITALIZED}Release -x lintVitalAnalyzeArm64Foss${CAPITALIZED}Release --warning-mode summary
         env:
           PULL_REQUEST: "false"
           GITHUB_EVENT_NAME: ${{ github.event_name }}
@@ -69,7 +76,7 @@ jobs:
       - name: Sign APK
         uses: ilharp/sign-android-release@v2.0.0
         with:
-          releaseDir: app/build/outputs/apk/arm64Foss/release/
+          releaseDir: app/build/outputs/apk/arm64Foss${{ matrix.glass == 'agsl' && 'Agsl' || 'Classic' }}/release/
           signingKey: ${{ secrets.KEYSTORE }}
           keyAlias: ${{ secrets.KEY_ALIAS }}
           keyStorePassword: ${{ secrets.KEYSTORE_PASSWORD }}
@@ -78,20 +85,22 @@ jobs:
 
       - name: Move signed APK
         run: |
-          OUTPUT_DIR="app/build/outputs/apk/arm64Foss/release"
+          VARIANT="${{ matrix.glass }}"
+          CAPITALIZED="$(echo ${VARIANT:0:1} | tr '[:lower:]' '[:upper:]')${VARIANT:1}"
+          OUTPUT_DIR="app/build/outputs/apk/arm64Foss${CAPITALIZED}/release"
           mkdir -p "$OUTPUT_DIR/out"
           SIGNED=$(find "$OUTPUT_DIR" -name "*-signed.apk" -o -name "*-unsigned-signed.apk" | head -1)
           if [ -n "$SIGNED" ]; then
-            mv "$SIGNED" "$OUTPUT_DIR/out/app-arm64-release.apk"
+            mv "$SIGNED" "$OUTPUT_DIR/out/app-arm64-${VARIANT}-release.apk"
           else
-            find "$OUTPUT_DIR" -maxdepth 1 -name "*.apk" | head -1 | xargs -I{} cp {} "$OUTPUT_DIR/out/app-arm64-release.apk"
+            find "$OUTPUT_DIR" -maxdepth 1 -name "*.apk" | head -1 | xargs -I{} cp {} "$OUTPUT_DIR/out/app-arm64-${VARIANT}-release.apk"
           fi
 
       - name: Upload Signed APK
         uses: actions/upload-artifact@v6
         with:
-          name: app-arm64-release
-          path: app/build/outputs/apk/arm64Foss/release/out/*
+          name: app-arm64-${{ matrix.glass }}-release
+          path: app/build/outputs/apk/arm64Foss${{ matrix.glass == 'agsl' && 'Agsl' || 'Classic' }}/release/out/*
 
       - name: Get version info
         id: version
@@ -102,19 +111,20 @@ jobs:
           echo "version_name=${VERSION_NAME}" >> "$GITHUB_OUTPUT"
           echo "short_sha=${SHORT_SHA}" >> "$GITHUB_OUTPUT"
           echo "timestamp=${TIMESTAMP}" >> "$GITHUB_OUTPUT"
-          echo "tag=v${VERSION_NAME}-${TIMESTAMP}" >> "$GITHUB_OUTPUT"
+          echo "tag=v${VERSION_NAME}-${{ matrix.glass }}-${TIMESTAMP}" >> "$GITHUB_OUTPUT"
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ steps.version.outputs.tag }}
-          name: Metrolist ${{ steps.version.outputs.version_name }} (${{ steps.version.outputs.timestamp }})
+          name: Metrolist ${{ steps.version.outputs.version_name }} ${{ matrix.glass }} (${{ steps.version.outputs.timestamp }})
           body: |
             Automated build from commit ${{ github.sha }}
             Branch: ${{ github.ref_name }}
-          files: app/build/outputs/apk/arm64Foss/release/out/app-arm64-release.apk
+            Glass effect: ${{ matrix.glass }}
+          files: app/build/outputs/apk/arm64Foss${{ matrix.glass == 'agsl' && 'Agsl' || 'Classic' }}/release/out/app-arm64-${{ matrix.glass }}-release.apk
           draft: false
           prerelease: false
-          make_latest: true
+          make_latest: ${{ matrix.glass == 'agsl' }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
