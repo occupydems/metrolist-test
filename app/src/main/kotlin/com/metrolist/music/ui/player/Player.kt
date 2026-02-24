@@ -409,8 +409,8 @@ fun BottomSheetPlayer(
     val TextBackgroundColor by animateColorAsState(
         targetValue = when (playerBackground) {
             PlayerBackgroundStyle.DEFAULT -> MaterialTheme.colorScheme.onBackground
-            PlayerBackgroundStyle.BLUR, PlayerBackgroundStyle.GRADIENT ->
-                if (isLightBackground) Color.Black else Color.White
+            PlayerBackgroundStyle.BLUR -> Color.White
+            PlayerBackgroundStyle.GRADIENT -> Color.White
         },
         label = "TextBackgroundColor"
     )
