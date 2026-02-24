@@ -83,7 +83,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalClipboard
@@ -253,15 +252,23 @@ fun Queue(
                             ),
                         ),
                 ) {
-                    val buttonSize = 36.dp
-                    val iconSize = 20.dp
-                    val circleShape = CircleShape
+                    val buttonSize = 42.dp
+                    val iconSize = 24.dp
+                    val queueShape = RoundedCornerShape(
+                        topStart = 50.dp, bottomStart = 50.dp,
+                        topEnd = 3.dp, bottomEnd = 3.dp
+                    )
+                    val middleShape = RoundedCornerShape(3.dp)
+                    val repeatShape = RoundedCornerShape(
+                        topStart = 3.dp, bottomStart = 3.dp,
+                        topEnd = 50.dp, bottomEnd = 50.dp
+                    )
 
                     PlayerQueueButton(
                         icon = R.drawable.queue_music,
                         onClick = { state.expandSoft() },
                         isActive = false,
-                        shape = circleShape,
+                        shape = queueShape,
                         modifier = Modifier.size(buttonSize),
                         textButtonColor = textButtonColor,
                         iconButtonColor = iconButtonColor,
@@ -281,7 +288,7 @@ fun Queue(
                         },
                         isActive = sleepTimerEnabled,
                         enabled = !isListenTogetherGuest,
-                        shape = circleShape,
+                        shape = middleShape,
                         modifier = Modifier.size(buttonSize),
                         textButtonColor = textButtonColor,
                         iconButtonColor = iconButtonColor,
@@ -299,7 +306,7 @@ fun Queue(
                         },
                         isActive = shuffleModeEnabled,
                         enabled = !isListenTogetherGuest,
-                        shape = circleShape,
+                        shape = middleShape,
                         modifier = Modifier.size(buttonSize),
                         textButtonColor = textButtonColor,
                         iconButtonColor = iconButtonColor,
@@ -312,7 +319,7 @@ fun Queue(
                         icon = R.drawable.lyrics,
                         onClick = { onToggleLyrics() },
                         isActive = showInlineLyrics,
-                        shape = circleShape,
+                        shape = middleShape,
                         modifier = Modifier.size(buttonSize),
                         textButtonColor = textButtonColor,
                         iconButtonColor = iconButtonColor,
@@ -332,7 +339,7 @@ fun Queue(
                         },
                         isActive = repeatMode != Player.REPEAT_MODE_OFF,
                         enabled = !isListenTogetherGuest,
-                        shape = circleShape,
+                        shape = repeatShape,
                         modifier = Modifier.size(buttonSize),
                         textButtonColor = textButtonColor,
                         iconButtonColor = iconButtonColor,
@@ -1169,7 +1176,7 @@ private fun PlayerQueueButton(
     onClick: () -> Unit,
     isActive: Boolean,
     enabled: Boolean = true,
-    shape: Shape,
+    shape: RoundedCornerShape,
     modifier: Modifier = Modifier,
     text: String? = null,
     textButtonColor: Color,
@@ -1178,7 +1185,6 @@ private fun PlayerQueueButton(
     textBackgroundColor: Color,
     playerBackground: PlayerBackgroundStyle
 ) {
-    val frostedColor = textBackgroundColor.copy(alpha = 0.15f)
     val buttonModifier = Modifier
         .clip(shape)
         .clickable(enabled = enabled, onClick = onClick)
@@ -1186,10 +1192,14 @@ private fun PlayerQueueButton(
     val alphaFactor = if (enabled) 1f else 0.35f
 
     val appliedModifier = if (isActive) {
-        modifier.then(buttonModifier.background(textBackgroundColor.copy(alpha = 0.3f))).alpha(alphaFactor)
+        modifier.then(buttonModifier.background(textButtonColor)).alpha(alphaFactor)
     } else {
         modifier.then(
-            buttonModifier.background(frostedColor)
+            buttonModifier.border(
+                width = 1.dp,
+                color = textButtonColor.copy(alpha = 0.3f),
+                shape = shape
+            )
         ).alpha(alphaFactor)
     }
 

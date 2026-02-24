@@ -57,6 +57,10 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.platform.LocalDensity
+import com.kyant.backdrop.Backdrop
+import com.kyant.backdrop.drawBackdrop
+import com.kyant.backdrop.effects.lens
 import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
@@ -102,12 +106,6 @@ import kotlinx.coroutines.launch
 import kotlin.math.absoluteValue
 import kotlin.math.roundToInt
 import com.metrolist.music.ui.component.Icon as MIcon
-import androidx.compose.ui.platform.LocalDensity
-import com.kyant.backdrop.Backdrop
-import com.kyant.backdrop.drawBackdrop
-import com.kyant.backdrop.effects.blur
-import com.kyant.backdrop.effects.lens
-import com.kyant.backdrop.effects.vibrancy
 
 /**
  * Stable wrapper for progress state - reads values only during draw phase
@@ -140,6 +138,7 @@ fun MiniPlayer(
     if (useNewMiniPlayerDesign) {
         NewMiniPlayer(
             progressState = progressState,
+            backdrop = backdrop,
             modifier = modifier
         )
     } else {
@@ -159,6 +158,7 @@ fun MiniPlayer(
 @Composable
 private fun NewMiniPlayer(
     progressState: ProgressState,
+    backdrop: Backdrop? = null,
     modifier: Modifier = Modifier
 ) {
     val playerConnection = LocalPlayerConnection.current ?: return
@@ -217,13 +217,10 @@ private fun NewMiniPlayer(
         (600 / (1f + kotlin.math.exp(-(-11.44748 * swipeSensitivity + 9.04945)))).roundToInt()
     }
     
-    // Memoize colors
-        val density = LocalDensity.current
-    val refractionHeightPx = with(density) { 20.dp.toPx() }
-    val refractionAmountPx = with(density) { (-66).dp.toPx() }
-    val blurRadiusPx = with(density) { 0.dp.toPx() }
+    val density = LocalDensity.current
 
-val backgroundColor = if (pureBlack && useDarkTheme) Color.Black else MaterialTheme.colorScheme.surfaceContainer
+    // Memoize colors
+    val backgroundColor = if (pureBlack && useDarkTheme) Color.Black else MaterialTheme.colorScheme.surfaceContainer
     val primaryColor = MaterialTheme.colorScheme.primary
     val outlineColor = MaterialTheme.colorScheme.outline
     val onSurfaceColor = MaterialTheme.colorScheme.onSurface
@@ -307,11 +304,9 @@ val backgroundColor = if (pureBlack && useDarkTheme) Color.Black else MaterialTh
                             backdrop = backdrop,
                             shape = { RoundedCornerShape(32.dp) },
                             effects = {
-                                vibrancy()
-                                if (blurRadiusPx > 0f) blur(blurRadiusPx)
                                 lens(
-                                    refractionHeight = refractionHeightPx,
-                                    refractionAmount = refractionAmountPx,
+                                    refractionHeight = with(density) { 20.dp.toPx() },
+                                    refractionAmount = with(density) { 67.dp.toPx() },
                                     chromaticAberration = true
                                 )
                             },

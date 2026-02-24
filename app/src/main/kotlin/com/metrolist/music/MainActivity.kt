@@ -779,6 +779,7 @@ class MainActivity : ComponentActivity() {
                     LocalSyncUtils provides syncUtils,
                     LocalListenTogetherManager provides listenTogetherManager,
                 ) {
+
                     val glassBackdrop = rememberLayerBackdrop()
 
                     Scaffold(
@@ -1018,7 +1019,7 @@ class MainActivity : ComponentActivity() {
                                     onSearchLongClick = onRailSearchLongClick
                                 )
                             }
-                            Box(Modifier.weight(1f)) {
+                            Box(Modifier.weight(1f).layerBackdrop(glassBackdrop)) {
                                 // NavHost with animations (Material 3 Expressive style)
                                 NavHost(
                                     navController = navController,
