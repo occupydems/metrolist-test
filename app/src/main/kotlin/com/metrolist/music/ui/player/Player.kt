@@ -220,6 +220,8 @@ fun BottomSheetPlayer(
     var isLightBackground by remember { mutableStateOf(false) }
     val luminanceCache = remember { mutableMapOf<String, Boolean>() }
 
+    var transitionDelayMs by remember { mutableFloatStateOf(300f) }
+
     val shouldUseDarkButtonColors = remember(playerBackground, useDarkTheme, isLightBackground) {
         when (playerBackground) {
             PlayerBackgroundStyle.BLUR, PlayerBackgroundStyle.GRADIENT -> !isLightBackground
@@ -358,7 +360,7 @@ fun BottomSheetPlayer(
                 }
                 if (cachedLuminance != null) isLightBackground = cachedLuminance
                 if (hasCachedData) {
-                    delay(300)
+                    delay(transitionDelayMs.toLong())
                     albumAccentColor = cachedAccent
                     return@LaunchedEffect
                 }
@@ -1209,6 +1211,24 @@ fun BottomSheetPlayer(
 
 
                 }
+            }
+
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = PlayerHorizontalPadding)
+            ) {
+                Text(
+                    text = "Transition delay: ${transitionDelayMs.toLong()}ms",
+                    color = TextBackgroundColor,
+                    style = MaterialTheme.typography.labelSmall
+                )
+                Slider(
+                    value = transitionDelayMs,
+                    onValueChange = { transitionDelayMs = it },
+                    valueRange = 0f..500f,
+                    modifier = Modifier.fillMaxWidth()
+                )
             }
 
             Spacer(Modifier.height(24.dp))
