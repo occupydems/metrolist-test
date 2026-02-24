@@ -503,11 +503,11 @@ fun BottomSheetPlayer(
     }
 
     val frostedIconTint by animateColorAsState(
-        targetValue = when {
-            playerBackground == PlayerBackgroundStyle.BLUR ||
-            playerBackground == PlayerBackgroundStyle.GRADIENT ->
+        targetValue = when (playerBackground) {
+            PlayerBackgroundStyle.BLUR ->
                 if (isLightBackground) Color.White else Color.Black
-            else -> iconButtonColor
+            PlayerBackgroundStyle.GRADIENT -> Color.White
+            PlayerBackgroundStyle.DEFAULT -> iconButtonColor
         },
         animationSpec = tween(durationMillis = 600),
         label = "frostedIconTint"
