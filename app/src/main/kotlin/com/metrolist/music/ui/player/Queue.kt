@@ -348,7 +348,6 @@ fun Queue(
                             .size(buttonSize)
                             .clip(CircleShape)
                             .background(textButtonColor.copy(alpha = 0.18f))
-                            .border(1.dp, textButtonColor.copy(alpha = 0.3f), CircleShape)
                             .clickable {
                                 menuState.show {
                                     PlayerMenu(
@@ -1195,11 +1194,6 @@ private fun PlayerQueueButton(
         modifier.then(
             buttonModifier
                 .background(textButtonColor.copy(alpha = 0.18f))
-                .border(
-                    width = 1.dp,
-                    color = textButtonColor.copy(alpha = 0.3f),
-                    shape = shape
-                )
         ).alpha(alphaFactor)
     }
 

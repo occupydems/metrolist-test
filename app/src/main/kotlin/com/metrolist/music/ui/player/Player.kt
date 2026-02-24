@@ -903,7 +903,6 @@ fun BottomSheetPlayer(
 
                 if (useNewPlayerDesign) {
                     val frostedCircleColor = textButtonColor.copy(alpha = 0.18f)
-                    val frostedBorderColor = textButtonColor.copy(alpha = 0.3f)
 
                     Row(
                         horizontalArrangement = Arrangement.spacedBy(6.dp),
@@ -916,7 +915,6 @@ fun BottomSheetPlayer(
                                         .size(36.dp)
                                         .clip(CircleShape)
                                         .background(frostedCircleColor)
-                                        .border(1.dp, frostedBorderColor, CircleShape)
                                         .clickable { isFullScreen = !isFullScreen },
                                     contentAlignment = Alignment.Center
                                 ) {
@@ -933,7 +931,6 @@ fun BottomSheetPlayer(
                                         .size(36.dp)
                                         .clip(CircleShape)
                                         .background(frostedCircleColor)
-                                        .border(1.dp, frostedBorderColor, CircleShape)
                                         .clickable {
                                             val intent = Intent().apply {
                                                 action = Intent.ACTION_SEND
@@ -965,7 +962,6 @@ fun BottomSheetPlayer(
                                         .size(36.dp)
                                         .clip(CircleShape)
                                         .background(frostedCircleColor)
-                                        .border(1.dp, frostedBorderColor, CircleShape)
                                         .clickable {
                                             menuState.show {
                                                 com.metrolist.music.ui.menu.LyricsMenu(
@@ -998,7 +994,6 @@ fun BottomSheetPlayer(
                                         .size(36.dp)
                                         .clip(CircleShape)
                                         .background(frostedCircleColor)
-                                        .border(1.dp, frostedBorderColor, CircleShape)
                                         .clickable(onClick = playerConnection::toggleLike),
                                     contentAlignment = Alignment.Center
                                 ) {
