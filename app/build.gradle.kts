@@ -96,9 +96,9 @@ android {
     signingConfigs {
         create("persistentDebug") {
             storeFile = file("persistent-debug.keystore")
-            storePassword = "android"
-            keyAlias = "androiddebugkey"
-            keyPassword = "android"
+            storePassword = System.getenv("DEBUG_STORE_PASSWORD") ?: "android"
+            keyAlias = System.getenv("DEBUG_KEY_ALIAS") ?: "androiddebugkey"
+            keyPassword = System.getenv("DEBUG_KEY_PASSWORD") ?: "android"
         }
         create("release") {
             storeFile = file("keystore/release.keystore")
@@ -107,9 +107,9 @@ android {
             keyPassword = System.getenv("KEY_PASSWORD")
         }
         getByName("debug") {
-            keyAlias = "androiddebugkey"
-            keyPassword = "android"
-            storePassword = "android"
+            keyAlias = System.getenv("DEBUG_KEY_ALIAS") ?: "androiddebugkey"
+            keyPassword = System.getenv("DEBUG_KEY_PASSWORD") ?: "android"
+            storePassword = System.getenv("DEBUG_STORE_PASSWORD") ?: "android"
             storeFile = file("${System.getProperty("user.home")}/.android/debug.keystore")
         }
     }
