@@ -220,7 +220,11 @@ fun BottomSheetPlayer(
     var isLightBackground by remember { mutableStateOf(false) }
     val luminanceCache = remember { mutableMapOf<String, Boolean>() }
 
-    val transitionDelayMs = 700L
+    var delayedMediaMetadata by remember { mutableStateOf(mediaMetadata) }
+    LaunchedEffect(mediaMetadata) {
+        delay(300)
+        delayedMediaMetadata = mediaMetadata
+    }
 
     val shouldUseDarkButtonColors = remember(playerBackground, useDarkTheme, isLightBackground) {
         when (playerBackground) {
@@ -360,7 +364,6 @@ fun BottomSheetPlayer(
                 }
                 if (cachedLuminance != null) isLightBackground = cachedLuminance
                 if (hasCachedData) {
-                    delay(transitionDelayMs)
                     albumAccentColor = cachedAccent
                     return@LaunchedEffect
                 }
@@ -918,16 +921,17 @@ fun BottomSheetPlayer(
                     ) {
                         if (mediaMetadata.explicit) MIcon.Explicit()
 
-                        if (mediaMetadata.artists.any { it.name.isNotBlank() }) {
+                        val delayedArtists = delayedMediaMetadata?.artists ?: mediaMetadata.artists
+                        if (delayedArtists.any { it.name.isNotBlank() }) {
                             val annotatedString = buildAnnotatedString {
-                                mediaMetadata.artists.forEachIndexed { index, artist ->
+                                delayedArtists.forEachIndexed { index, artist ->
                                     val tag = "artist_${artist.id.orEmpty()}"
                                     pushStringAnnotation(tag = tag, annotation = artist.id.orEmpty())
                                     withStyle(SpanStyle(color = artistNameColor, fontSize = 16.sp)) {
                                         append(artist.name)
                                     }
                                     pop()
-                                    if (index != mediaMetadata.artists.lastIndex) append(", ")
+                                    if (index != delayedArtists.lastIndex) append(", ")
                                 }
                             }
 
