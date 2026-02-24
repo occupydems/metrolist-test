@@ -877,7 +877,7 @@ fun BottomSheetPlayer(
                 ) {
                     AnimatedContent(
                         targetState = mediaMetadata.title,
-                        transitionSpec = { fadeIn() togetherWith fadeOut() },
+                        transitionSpec = { fadeIn(tween(150)) togetherWith fadeOut(tween(100)) },
                         label = "",
                     ) { title ->
                         Text(
