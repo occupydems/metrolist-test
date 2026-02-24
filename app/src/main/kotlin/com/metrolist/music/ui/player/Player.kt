@@ -274,7 +274,7 @@ fun BottomSheetPlayer(
     val mediaMetadata by playerConnection.mediaMetadata.collectAsState()
     var delayedMediaMetadata by remember { mutableStateOf(mediaMetadata) }
     LaunchedEffect(mediaMetadata) {
-        delay(300)
+        delay(50)
         delayedMediaMetadata = mediaMetadata
     }
     val currentSong by playerConnection.currentSong.collectAsState(initial = null)
