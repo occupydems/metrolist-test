@@ -216,6 +216,9 @@ fun BottomSheetPlayer(
         if (darkTheme == DarkMode.AUTO) isSystemInDarkTheme else darkTheme == DarkMode.ON
     }
 
+    var isLightBackground by remember { mutableStateOf(false) }
+    val luminanceCache = remember { mutableMapOf<String, Boolean>() }
+
     val shouldUseDarkButtonColors = remember(playerBackground, useDarkTheme, isLightBackground) {
         when (playerBackground) {
             PlayerBackgroundStyle.BLUR, PlayerBackgroundStyle.GRADIENT -> !isLightBackground
@@ -331,9 +334,6 @@ fun BottomSheetPlayer(
 
     var albumAccentColor by remember { mutableStateOf<Color?>(null) }
     val albumAccentCache = remember { mutableMapOf<String, Color>() }
-
-    var isLightBackground by remember { mutableStateOf(false) }
-    val luminanceCache = remember { mutableMapOf<String, Boolean>() }
 
     if (!canSkipNext && automix.isNotEmpty()) {
         playerConnection.service.addToQueueAutomix(automix[0], 0)
