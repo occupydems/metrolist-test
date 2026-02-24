@@ -308,7 +308,7 @@ private fun NewMiniPlayer(
                             backdrop = backdrop,
                             shape = { RoundedCornerShape(32.dp) },
                             effects = {
-                                blur(0.dp)
+                                blur(0f)
                                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
                                     val refractionHeightPx = with(density) { 11.dp.toPx() }
                                     val refractionAmountPx = with(density) { 67.dp.toPx() }
