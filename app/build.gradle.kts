@@ -226,7 +226,6 @@ tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile>().configureEach 
 }
 
 dependencies {
-    implementation("io.github.kyant0:backdrop:1.0.6")
     implementation(libs.guava)
     implementation(libs.coroutines.guava)
     implementation(libs.concurrent.futures)
@@ -299,4 +298,6 @@ dependencies {
     coreLibraryDesugaring(libs.desugaring)
 
     implementation(libs.timber)
+
+    implementation("io.github.kyant0:backdrop:1.0.6")
 }

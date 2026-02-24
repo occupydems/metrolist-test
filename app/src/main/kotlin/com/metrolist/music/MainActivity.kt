@@ -166,6 +166,9 @@ import com.metrolist.music.ui.component.rememberBottomSheetState
 import com.metrolist.music.ui.component.shimmer.ShimmerTheme
 import com.metrolist.music.ui.menu.YouTubeSongMenu
 import com.metrolist.music.ui.player.BottomSheetPlayer
+import com.kyant.backdrop.Backdrop
+import com.kyant.backdrop.backdrops.layerBackdrop
+import com.kyant.backdrop.backdrops.rememberLayerBackdrop
 import com.metrolist.music.ui.screens.Screens
 import com.metrolist.music.ui.screens.navigationBuilder
 import com.metrolist.music.ui.screens.settings.DarkMode
@@ -199,8 +202,6 @@ import java.net.URLDecoder
 import java.net.URLEncoder
 import java.util.Locale
 import javax.inject.Inject
-import com.kyant.backdrop.backdrops.layerBackdrop
-import com.kyant.backdrop.backdrops.rememberLayerBackdrop
 
 @Suppress("DEPRECATION", "ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE")
 @AndroidEntryPoint
@@ -516,9 +517,6 @@ class MainActivity : ComponentActivity() {
                 val bottomInsetDp = WindowInsets.systemBars.asPaddingValues().calculateBottomPadding()
 
                 val navController = rememberNavController()
-
-                            // Backdrop capture for liquid-glass mini player
-                            val glassBackdrop = rememberLayerBackdrop()
                 val homeViewModel: HomeViewModel = hiltViewModel()
                 val accountImageUrl by homeViewModel.accountImageUrl.collectAsState()
                 val navBackStackEntry by navController.currentBackStackEntryAsState()
@@ -781,10 +779,9 @@ class MainActivity : ComponentActivity() {
                     LocalSyncUtils provides syncUtils,
                     LocalListenTogetherManager provides listenTogetherManager,
                 ) {
+                    val glassBackdrop = rememberLayerBackdrop()
 
-                                        Box(modifier = Modifier.fillMaxSize()) {
-                        Box(modifier = Modifier.fillMaxSize().layerBackdrop(glassBackdrop)) {
-Scaffold(
+                    Scaffold(
                         snackbarHost = { SnackbarHost(snackbarHostState) },
                         topBar = {
                             AnimatedVisibility(
@@ -866,19 +863,6 @@ Scaffold(
                                     )
                                 }
                             }
-                        }
-
-                        // Liquid-glass mini player overlay (drawn after backdrop capture)
-                        if (currentRoute != "wrapped") {
-                            BottomSheetPlayer(
-                                state = playerBottomSheetState,
-                                navController = navController,
-                                pureBlack = pureBlack,
-                                backdrop = glassBackdrop,
-                            )
-                        }
-                    }
-
                         },
                         bottomBar = {
                             val onNavItemClick: (Screens, Boolean) -> Unit = remember(navController, coroutineScope, topAppBarScrollBehavior, playerBottomSheetState) {
@@ -917,6 +901,13 @@ Scaffold(
 
                             if (!showRail && currentRoute != "wrapped") {
                                 Box {
+                                    BottomSheetPlayer(
+                                        state = playerBottomSheetState,
+                                        navController = navController,
+                                        pureBlack = pureBlack,
+                                        backdrop = glassBackdrop
+                                    )
+
                                     AppNavigationBar(
                                         navigationItems = navigationItems,
                                         currentRoute = currentRoute,
@@ -957,6 +948,16 @@ Scaffold(
                                             }
                                             .background(baseBg)
                                     )
+                                }
+                            } else {
+                                if (currentRoute != "wrapped") {
+                                    BottomSheetPlayer(
+                                        state = playerBottomSheetState,
+                                        navController = navController,
+                                        pureBlack = pureBlack,
+                                        backdrop = glassBackdrop
+                                    )
+                                }
 
                                 Box(
                                     modifier = Modifier

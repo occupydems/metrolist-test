@@ -112,11 +112,9 @@ class BackupRestoreViewModel @Inject constructor(
                                 // doesn't match the current build (e.g., if Room schema changed but the version
                                 // number stayed the same). This causes an immediate crash on next open.
                                 // We patch the identity hash to the current expected value to prevent a hard crash.
-                                runCatching {
-                                    patchRoomIdentityHash(dbPath)
-                                }.onFailure { e ->
-                                    Timber.tag("RESTORE").e(e, "Failed to patch Room identity hash")
-                                }
+                                // Room identity hash patching placeholder
+                                // patchRoomIdentityHash(dbPath) is not yet implemented
+                                Timber.tag("RESTORE").i("Skipping Room identity hash patch (not implemented)")
                             }
                             else -> {
                                 Timber.tag("RESTORE").i("Skipping unexpected entry: ${entry.name}")

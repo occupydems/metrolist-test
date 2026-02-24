@@ -296,7 +296,7 @@ constructor(
                                     )
 
                                     PlaylistEntity.DOWNLOADED_PLAYLIST_ID -> {
-                                        database.downloadedSongs()
+                                        database.downloadedSongs(SongSortType.CREATE_DATE, descending = true)
                                     }
 
                                     else ->
@@ -544,7 +544,7 @@ constructor(
                     val songs = when (playlistId) {
                         PlaylistEntity.LIKED_PLAYLIST_ID -> database.likedSongs(SongSortType.CREATE_DATE, descending = true)
                         PlaylistEntity.DOWNLOADED_PLAYLIST_ID -> {
-                            database.downloadedSongs()
+                            database.downloadedSongs(SongSortType.CREATE_DATE, descending = true)
                         }
                         else -> database.playlistSongs(playlistId).map { list ->
                             list.map { it.song }
