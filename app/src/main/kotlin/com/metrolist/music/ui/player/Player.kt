@@ -1898,15 +1898,15 @@ private fun PlayerMoreMenuButton(
 }
 
 private fun extractAccentColor(palette: Palette): Color {
-    val swatch = palette.lightVibrantSwatch
-        ?: palette.vibrantSwatch
-        ?: palette.lightMutedSwatch
+    val swatch = palette.lightMutedSwatch
+        ?: palette.mutedSwatch
+        ?: palette.lightVibrantSwatch
         ?: palette.dominantSwatch
-    if (swatch == null) return Color.White.copy(alpha = 0.8f)
+    if (swatch == null) return Color.White.copy(alpha = 0.7f)
     val hsv = FloatArray(3)
     android.graphics.Color.colorToHSV(swatch.rgb, hsv)
-    hsv[1] = (hsv[1] * 1.2f).coerceAtMost(1.0f)
-    hsv[2] = hsv[2].coerceIn(0.65f, 0.95f)
+    hsv[1] = (hsv[1] * 0.7f).coerceAtMost(0.6f)
+    hsv[2] = hsv[2].coerceIn(0.55f, 0.80f)
     return Color(android.graphics.Color.HSVToColor(hsv))
 }
 
