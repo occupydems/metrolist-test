@@ -146,6 +146,7 @@ import com.metrolist.music.constants.SquigglySliderKey
 import com.metrolist.music.constants.ThumbnailCornerRadius
 import com.metrolist.music.constants.UseNewPlayerDesignKey
 import com.metrolist.music.db.entities.LyricsEntity
+import com.metrolist.music.extensions.metadata
 import com.metrolist.music.extensions.togglePlayPause
 import com.metrolist.music.extensions.toggleRepeatMode
 import com.metrolist.music.listentogether.RoomRole
@@ -403,6 +404,54 @@ fun BottomSheetPlayer(
             gradientColors = emptyList()
             albumAccentColor = null
             isLightBackground = false
+        }
+    }
+
+    LaunchedEffect(mediaMetadata?.id, playerBackground) {
+        val needsPalette = playerBackground == PlayerBackgroundStyle.GRADIENT ||
+                playerBackground == PlayerBackgroundStyle.BLUR
+        if (!needsPalette) return@LaunchedEffect
+        withContext(Dispatchers.IO) {
+            val player = playerConnection.player
+            val currentIndex = try { player.currentMediaItemIndex } catch (_: Exception) { return@withContext }
+            val count = try { player.mediaItemCount } catch (_: Exception) { return@withContext }
+            val adjacentIndices = listOfNotNull(
+                if (currentIndex > 0) currentIndex - 1 else null,
+                if (currentIndex < count - 1) currentIndex + 1 else null
+            )
+            for (idx in adjacentIndices) {
+                val item = try { player.getMediaItemAt(idx) } catch (_: Exception) { continue }
+                val meta = item.metadata ?: continue
+                val id = meta.id
+                if (albumAccentCache.containsKey(id)) continue
+                val thumbUrl = meta.thumbnailUrl ?: continue
+                val request = ImageRequest.Builder(context)
+                    .data(thumbUrl)
+                    .size(100, 100)
+                    .allowHardware(false)
+                    .memoryCacheKey("gradient_$id")
+                    .build()
+                val result = runCatching { context.imageLoader.execute(request) }.getOrNull()
+                if (result != null) {
+                    val bitmap = result.image?.toBitmap()
+                    if (bitmap != null) {
+                        val palette = withContext(Dispatchers.Default) {
+                            Palette.from(bitmap)
+                                .maximumColorCount(8)
+                                .resizeBitmapArea(100 * 100)
+                                .generate()
+                        }
+                        albumAccentCache[id] = extractAccentColor(palette)
+                        luminanceCache[id] = isBackgroundLight(palette)
+                        if (playerBackground == PlayerBackgroundStyle.GRADIENT) {
+                            gradientColorsCache[id] = PlayerColorExtractor.extractGradientColors(
+                                palette = palette,
+                                fallbackColor = fallbackColor
+                            )
+                        }
+                    }
+                }
+            }
         }
     }
 
