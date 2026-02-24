@@ -329,6 +329,9 @@ fun BottomSheetPlayer(
     }
     val gradientColorsCache = remember { mutableMapOf<String, List<Color>>() }
 
+    var albumAccentColor by remember { mutableStateOf<Color?>(null) }
+    val albumAccentCache = remember { mutableMapOf<String, Color>() }
+
     if (!canSkipNext && automix.isNotEmpty()) {
         playerConnection.service.addToQueueAutomix(automix[0], 0)
     }
@@ -337,12 +340,19 @@ fun BottomSheetPlayer(
     val fallbackColor = MaterialTheme.colorScheme.surface.toArgb()
 
     LaunchedEffect(mediaMetadata?.id, playerBackground) {
-        if (playerBackground == PlayerBackgroundStyle.GRADIENT) {
+        val needsPalette = playerBackground == PlayerBackgroundStyle.GRADIENT ||
+                playerBackground == PlayerBackgroundStyle.BLUR
+        if (needsPalette) {
             val currentMetadata = mediaMetadata
             if (currentMetadata != null && currentMetadata.thumbnailUrl != null) {
-                val cachedColors = gradientColorsCache[currentMetadata.id]
-                if (cachedColors != null) {
-                    gradientColors = cachedColors
+                val cachedAccent = albumAccentCache[currentMetadata.id]
+                val cachedGradient = gradientColorsCache[currentMetadata.id]
+                if (cachedAccent != null) albumAccentColor = cachedAccent
+                if (cachedGradient != null && playerBackground == PlayerBackgroundStyle.GRADIENT) {
+                    gradientColors = cachedGradient
+                    if (cachedAccent != null) return@LaunchedEffect
+                }
+                if (cachedAccent != null && playerBackground == PlayerBackgroundStyle.BLUR) {
                     return@LaunchedEffect
                 }
                 withContext(Dispatchers.IO) {
@@ -363,18 +373,25 @@ fun BottomSheetPlayer(
                                     .resizeBitmapArea(100 * 100)
                                     .generate()
                             }
-                            val extractedColors = PlayerColorExtractor.extractGradientColors(
-                                palette = palette,
-                                fallbackColor = fallbackColor
-                            )
-                            gradientColorsCache[currentMetadata.id] = extractedColors
-                            withContext(Dispatchers.Main) { gradientColors = extractedColors }
+                            val accent = extractAccentColor(palette)
+                            albumAccentCache[currentMetadata.id] = accent
+                            withContext(Dispatchers.Main) { albumAccentColor = accent }
+
+                            if (playerBackground == PlayerBackgroundStyle.GRADIENT) {
+                                val extractedColors = PlayerColorExtractor.extractGradientColors(
+                                    palette = palette,
+                                    fallbackColor = fallbackColor
+                                )
+                                gradientColorsCache[currentMetadata.id] = extractedColors
+                                withContext(Dispatchers.Main) { gradientColors = extractedColors }
+                            }
                         }
                     }
                 }
             }
         } else {
             gradientColors = emptyList()
+            albumAccentColor = null
         }
     }
 
@@ -385,6 +402,15 @@ fun BottomSheetPlayer(
             PlayerBackgroundStyle.GRADIENT -> Color.White
         },
         label = "TextBackgroundColor"
+    )
+
+    val artistNameColor by animateColorAsState(
+        targetValue = when (playerBackground) {
+            PlayerBackgroundStyle.DEFAULT -> MaterialTheme.colorScheme.onBackground.copy(alpha = 0.7f)
+            PlayerBackgroundStyle.BLUR, PlayerBackgroundStyle.GRADIENT ->
+                albumAccentColor ?: Color.White.copy(alpha = 0.8f)
+        },
+        label = "artistNameColor"
     )
 
     val icBackgroundColor by animateColorAsState(
@@ -823,7 +849,7 @@ fun BottomSheetPlayer(
                                 mediaMetadata.artists.forEachIndexed { index, artist ->
                                     val tag = "artist_${artist.id.orEmpty()}"
                                     pushStringAnnotation(tag = tag, annotation = artist.id.orEmpty())
-                                    withStyle(SpanStyle(color = TextBackgroundColor, fontSize = 16.sp)) {
+                                    withStyle(SpanStyle(color = artistNameColor, fontSize = 16.sp)) {
                                         append(artist.name)
                                     }
                                     pop()
@@ -1851,4 +1877,17 @@ private fun PlayerMoreMenuButton(
             colorFilter = ColorFilter.tint(iconButtonColor),
         )
     }
+}
+
+private fun extractAccentColor(palette: Palette): Color {
+    val swatch = palette.lightVibrantSwatch
+        ?: palette.vibrantSwatch
+        ?: palette.lightMutedSwatch
+        ?: palette.dominantSwatch
+    if (swatch == null) return Color.White.copy(alpha = 0.8f)
+    val hsv = FloatArray(3)
+    android.graphics.Color.colorToHSV(swatch.rgb, hsv)
+    hsv[1] = (hsv[1] * 1.2f).coerceAtMost(1.0f)
+    hsv[2] = hsv[2].coerceIn(0.65f, 0.95f)
+    return Color(android.graphics.Color.HSVToColor(hsv))
 }
