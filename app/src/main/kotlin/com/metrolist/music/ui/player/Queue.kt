@@ -1197,7 +1197,8 @@ private fun PlayerQueueButton(
         modifier = appliedModifier,
         contentAlignment = Alignment.Center
     ) {
-        val activeContrastColor = if (textButtonColor.luminance() > 0.5f) Color.Black else Color.White
+        val bgLuminance = 0.299f * textButtonColor.red + 0.587f * textButtonColor.green + 0.114f * textButtonColor.blue
+        val activeContrastColor = if (bgLuminance > 0.5f) Color.Black else Color.White
 
         if (text != null) {
             Text(
