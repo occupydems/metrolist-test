@@ -427,8 +427,8 @@ fun BottomSheetPlayer(
     val icBackgroundColor by animateColorAsState(
         targetValue = when (playerBackground) {
             PlayerBackgroundStyle.DEFAULT -> MaterialTheme.colorScheme.surface
-            PlayerBackgroundStyle.BLUR, PlayerBackgroundStyle.GRADIENT ->
-                if (isLightBackground) Color.White else Color.Black
+            PlayerBackgroundStyle.BLUR -> Color.Black
+            PlayerBackgroundStyle.GRADIENT -> Color.Black
         },
         label = "icBackgroundColor"
     )
@@ -437,9 +437,7 @@ fun BottomSheetPlayer(
         playerBackground == PlayerBackgroundStyle.BLUR || 
         playerBackground == PlayerBackgroundStyle.GRADIENT -> {
             when (playerButtonsStyle) {
-                PlayerButtonsStyle.DEFAULT ->
-                    if (isLightBackground) Pair(Color.Black, Color.White)
-                    else Pair(Color.White, Color.Black)
+                PlayerButtonsStyle.DEFAULT -> Pair(Color.White, Color.Black)
                 PlayerButtonsStyle.PRIMARY -> Pair(
                     MaterialTheme.colorScheme.primary,
                     MaterialTheme.colorScheme.onPrimary
@@ -472,15 +470,10 @@ fun BottomSheetPlayer(
         playerBackground == PlayerBackgroundStyle.BLUR || 
         playerBackground == PlayerBackgroundStyle.GRADIENT -> {
             when (playerButtonsStyle) {
-                PlayerButtonsStyle.DEFAULT ->
-                    if (isLightBackground) Pair(
-                        Color.Black.copy(alpha = 0.2f),
-                        Color.Black
-                    )
-                    else Pair(
-                        Color.White.copy(alpha = 0.2f), 
-                        Color.White
-                    )
+                PlayerButtonsStyle.DEFAULT -> Pair(
+                    Color.White.copy(alpha = 0.2f), 
+                    Color.White
+                )
                 PlayerButtonsStyle.PRIMARY -> Pair(
                     MaterialTheme.colorScheme.primaryContainer,
                     MaterialTheme.colorScheme.onPrimaryContainer
@@ -507,6 +500,13 @@ fun BottomSheetPlayer(
                 )
             }
         }
+    }
+
+    val frostedIconTint = when {
+        playerBackground == PlayerBackgroundStyle.BLUR ||
+        playerBackground == PlayerBackgroundStyle.GRADIENT ->
+            if (isLightBackground) Color.White else Color.Black
+        else -> iconButtonColor
     }
 
     val download by LocalDownloadUtil.current.getDownload(mediaMetadata?.id ?: "")
@@ -967,7 +967,7 @@ fun BottomSheetPlayer(
                                         painter = painterResource(R.drawable.fullscreen),
                                         contentDescription = null,
                                         modifier = Modifier.size(20.dp),
-                                        tint = iconButtonColor
+                                        tint = frostedIconTint
                                     )
                                 }
                             } else {
@@ -993,7 +993,7 @@ fun BottomSheetPlayer(
                                         painter = painterResource(R.drawable.share),
                                         contentDescription = null,
                                         modifier = Modifier.size(20.dp),
-                                        tint = iconButtonColor
+                                        tint = frostedIconTint
                                     )
                                 }
                             }
@@ -1030,7 +1030,7 @@ fun BottomSheetPlayer(
                                         painter = painterResource(R.drawable.more_horiz),
                                         contentDescription = null,
                                         modifier = Modifier.size(20.dp),
-                                        tint = iconButtonColor
+                                        tint = frostedIconTint
                                     )
                                 }
                             } else {
@@ -1050,7 +1050,7 @@ fun BottomSheetPlayer(
                                         ),
                                         contentDescription = null,
                                         modifier = Modifier.size(20.dp),
-                                        tint = iconButtonColor
+                                        tint = frostedIconTint
                                     )
                                 }
                             }
@@ -1069,7 +1069,7 @@ fun BottomSheetPlayer(
                                 Icon(
                                     painter = painterResource(R.drawable.fullscreen),
                                     contentDescription = null,
-                                    tint = iconButtonColor,
+                                    tint = frostedIconTint,
                                     modifier = Modifier
                                         .align(Alignment.Center)
                                         .size(24.dp),
@@ -1096,7 +1096,7 @@ fun BottomSheetPlayer(
                                 Icon(
                                     painter = painterResource(R.drawable.share),
                                     contentDescription = null,
-                                    tint = iconButtonColor,
+                                    tint = frostedIconTint,
                                     modifier = Modifier
                                         .align(Alignment.Center)
                                         .size(24.dp),
@@ -1136,7 +1136,7 @@ fun BottomSheetPlayer(
                                 Icon(
                                     painter = painterResource(R.drawable.more_horiz),
                                     contentDescription = null,
-                                    tint = iconButtonColor,
+                                    tint = frostedIconTint,
                                     modifier = Modifier
                                         .align(Alignment.Center)
                                         .size(24.dp),
@@ -1148,7 +1148,7 @@ fun BottomSheetPlayer(
                                 navController = navController,
                                 state = state,
                                 textButtonColor = textButtonColor,
-                                iconButtonColor = iconButtonColor,
+                                iconButtonColor = frostedIconTint,
                             )
                         }
                     }
@@ -1724,7 +1724,7 @@ fun BottomSheetPlayer(
             onBackgroundColor = onBackgroundColor,
             TextBackgroundColor = TextBackgroundColor,
             textButtonColor = textButtonColor,
-            iconButtonColor = iconButtonColor,
+            iconButtonColor = frostedIconTint,
             pureBlack = pureBlack,
             showInlineLyrics = showInlineLyrics,
             playerBackground = playerBackground,
