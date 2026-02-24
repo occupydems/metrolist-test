@@ -1917,5 +1917,5 @@ private fun isBackgroundLight(palette: Palette): Boolean {
     val g = android.graphics.Color.green(rgb) / 255f
     val b = android.graphics.Color.blue(rgb) / 255f
     val luminance = 0.299f * r + 0.587f * g + 0.114f * b
-    return luminance > 0.5f
+    return luminance < 0.5f
 }
