@@ -46,6 +46,7 @@ import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.ui.graphics.Shape
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -252,23 +253,15 @@ fun Queue(
                             ),
                         ),
                 ) {
-                    val buttonSize = 42.dp
-                    val iconSize = 24.dp
-                    val queueShape = RoundedCornerShape(
-                        topStart = 50.dp, bottomStart = 50.dp,
-                        topEnd = 3.dp, bottomEnd = 3.dp
-                    )
-                    val middleShape = RoundedCornerShape(3.dp)
-                    val repeatShape = RoundedCornerShape(
-                        topStart = 3.dp, bottomStart = 3.dp,
-                        topEnd = 50.dp, bottomEnd = 50.dp
-                    )
+                    val buttonSize = 36.dp
+                    val iconSize = 20.dp
+                    val circleShape = CircleShape
 
                     PlayerQueueButton(
                         icon = R.drawable.queue_music,
                         onClick = { state.expandSoft() },
                         isActive = false,
-                        shape = queueShape,
+                        shape = circleShape,
                         modifier = Modifier.size(buttonSize),
                         textButtonColor = textButtonColor,
                         iconButtonColor = iconButtonColor,
@@ -288,7 +281,7 @@ fun Queue(
                         },
                         isActive = sleepTimerEnabled,
                         enabled = !isListenTogetherGuest,
-                        shape = middleShape,
+                        shape = circleShape,
                         modifier = Modifier.size(buttonSize),
                         textButtonColor = textButtonColor,
                         iconButtonColor = iconButtonColor,
@@ -306,7 +299,7 @@ fun Queue(
                         },
                         isActive = shuffleModeEnabled,
                         enabled = !isListenTogetherGuest,
-                        shape = middleShape,
+                        shape = circleShape,
                         modifier = Modifier.size(buttonSize),
                         textButtonColor = textButtonColor,
                         iconButtonColor = iconButtonColor,
@@ -319,7 +312,7 @@ fun Queue(
                         icon = R.drawable.lyrics,
                         onClick = { onToggleLyrics() },
                         isActive = showInlineLyrics,
-                        shape = middleShape,
+                        shape = circleShape,
                         modifier = Modifier.size(buttonSize),
                         textButtonColor = textButtonColor,
                         iconButtonColor = iconButtonColor,
@@ -339,7 +332,7 @@ fun Queue(
                         },
                         isActive = repeatMode != Player.REPEAT_MODE_OFF,
                         enabled = !isListenTogetherGuest,
-                        shape = repeatShape,
+                        shape = circleShape,
                         modifier = Modifier.size(buttonSize),
                         textButtonColor = textButtonColor,
                         iconButtonColor = iconButtonColor,
@@ -354,7 +347,8 @@ fun Queue(
                         modifier = Modifier
                             .size(buttonSize)
                             .clip(CircleShape)
-                            .background(textButtonColor)
+                            .background(textButtonColor.copy(alpha = 0.18f))
+                            .border(1.dp, textButtonColor.copy(alpha = 0.3f), CircleShape)
                             .clickable {
                                 menuState.show {
                                     PlayerMenu(
@@ -374,11 +368,15 @@ fun Queue(
                             },
                         contentAlignment = Alignment.Center
                     ) {
+                        val menuTint = when (playerBackground) {
+                            PlayerBackgroundStyle.BLUR, PlayerBackgroundStyle.GRADIENT -> Color.White
+                            PlayerBackgroundStyle.DEFAULT -> MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
+                        }
                         Icon(
                             painter = painterResource(id = R.drawable.more_vert),
                             contentDescription = null,
                             modifier = Modifier.size(iconSize),
-                            tint = iconButtonColor
+                            tint = menuTint
                         )
                     }
                 }
@@ -1176,7 +1174,7 @@ private fun PlayerQueueButton(
     onClick: () -> Unit,
     isActive: Boolean,
     enabled: Boolean = true,
-    shape: RoundedCornerShape,
+    shape: Shape,
     modifier: Modifier = Modifier,
     text: String? = null,
     textButtonColor: Color,
@@ -1195,11 +1193,13 @@ private fun PlayerQueueButton(
         modifier.then(buttonModifier.background(textButtonColor)).alpha(alphaFactor)
     } else {
         modifier.then(
-            buttonModifier.border(
-                width = 1.dp,
-                color = textButtonColor.copy(alpha = 0.3f),
-                shape = shape
-            )
+            buttonModifier
+                .background(textButtonColor.copy(alpha = 0.18f))
+                .border(
+                    width = 1.dp,
+                    color = textButtonColor.copy(alpha = 0.3f),
+                    shape = shape
+                )
         ).alpha(alphaFactor)
     }
 
