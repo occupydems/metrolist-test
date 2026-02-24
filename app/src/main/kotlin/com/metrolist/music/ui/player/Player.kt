@@ -352,14 +352,19 @@ fun BottomSheetPlayer(
                 val cachedAccent = albumAccentCache[currentMetadata.id]
                 val cachedLuminance = luminanceCache[currentMetadata.id]
                 val cachedGradient = gradientColorsCache[currentMetadata.id]
-                if (cachedAccent != null) albumAccentColor = cachedAccent
+                val hasCachedData = cachedAccent != null
+                if (hasCachedData) {
+                    delay(150)
+                    albumAccentColor = cachedAccent
+                    if (cachedLuminance != null) isLightBackground = cachedLuminance
+                    if (cachedGradient != null && playerBackground == PlayerBackgroundStyle.GRADIENT) {
+                        gradientColors = cachedGradient
+                    }
+                    return@LaunchedEffect
+                }
                 if (cachedLuminance != null) isLightBackground = cachedLuminance
                 if (cachedGradient != null && playerBackground == PlayerBackgroundStyle.GRADIENT) {
                     gradientColors = cachedGradient
-                    if (cachedAccent != null) return@LaunchedEffect
-                }
-                if (cachedAccent != null && playerBackground == PlayerBackgroundStyle.BLUR) {
-                    return@LaunchedEffect
                 }
                 withContext(Dispatchers.IO) {
                     val request = ImageRequest.Builder(context)
