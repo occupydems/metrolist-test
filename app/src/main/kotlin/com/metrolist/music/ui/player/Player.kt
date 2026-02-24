@@ -216,9 +216,9 @@ fun BottomSheetPlayer(
         if (darkTheme == DarkMode.AUTO) isSystemInDarkTheme else darkTheme == DarkMode.ON
     }
 
-    val shouldUseDarkButtonColors = remember(playerBackground, useDarkTheme) {
+    val shouldUseDarkButtonColors = remember(playerBackground, useDarkTheme, isLightBackground) {
         when (playerBackground) {
-            PlayerBackgroundStyle.BLUR, PlayerBackgroundStyle.GRADIENT -> true
+            PlayerBackgroundStyle.BLUR, PlayerBackgroundStyle.GRADIENT -> !isLightBackground
             PlayerBackgroundStyle.DEFAULT -> useDarkTheme
         }
     }
@@ -332,6 +332,9 @@ fun BottomSheetPlayer(
     var albumAccentColor by remember { mutableStateOf<Color?>(null) }
     val albumAccentCache = remember { mutableMapOf<String, Color>() }
 
+    var isLightBackground by remember { mutableStateOf(false) }
+    val luminanceCache = remember { mutableMapOf<String, Boolean>() }
+
     if (!canSkipNext && automix.isNotEmpty()) {
         playerConnection.service.addToQueueAutomix(automix[0], 0)
     }
@@ -346,8 +349,10 @@ fun BottomSheetPlayer(
             val currentMetadata = mediaMetadata
             if (currentMetadata != null && currentMetadata.thumbnailUrl != null) {
                 val cachedAccent = albumAccentCache[currentMetadata.id]
+                val cachedLuminance = luminanceCache[currentMetadata.id]
                 val cachedGradient = gradientColorsCache[currentMetadata.id]
                 if (cachedAccent != null) albumAccentColor = cachedAccent
+                if (cachedLuminance != null) isLightBackground = cachedLuminance
                 if (cachedGradient != null && playerBackground == PlayerBackgroundStyle.GRADIENT) {
                     gradientColors = cachedGradient
                     if (cachedAccent != null) return@LaunchedEffect
@@ -375,7 +380,12 @@ fun BottomSheetPlayer(
                             }
                             val accent = extractAccentColor(palette)
                             albumAccentCache[currentMetadata.id] = accent
-                            withContext(Dispatchers.Main) { albumAccentColor = accent }
+                            val light = isBackgroundLight(palette)
+                            luminanceCache[currentMetadata.id] = light
+                            withContext(Dispatchers.Main) {
+                                albumAccentColor = accent
+                                isLightBackground = light
+                            }
 
                             if (playerBackground == PlayerBackgroundStyle.GRADIENT) {
                                 val extractedColors = PlayerColorExtractor.extractGradientColors(
@@ -392,14 +402,15 @@ fun BottomSheetPlayer(
         } else {
             gradientColors = emptyList()
             albumAccentColor = null
+            isLightBackground = false
         }
     }
 
     val TextBackgroundColor by animateColorAsState(
         targetValue = when (playerBackground) {
             PlayerBackgroundStyle.DEFAULT -> MaterialTheme.colorScheme.onBackground
-            PlayerBackgroundStyle.BLUR -> Color.White
-            PlayerBackgroundStyle.GRADIENT -> Color.White
+            PlayerBackgroundStyle.BLUR, PlayerBackgroundStyle.GRADIENT ->
+                if (isLightBackground) Color.Black else Color.White
         },
         label = "TextBackgroundColor"
     )
@@ -416,8 +427,8 @@ fun BottomSheetPlayer(
     val icBackgroundColor by animateColorAsState(
         targetValue = when (playerBackground) {
             PlayerBackgroundStyle.DEFAULT -> MaterialTheme.colorScheme.surface
-            PlayerBackgroundStyle.BLUR -> Color.Black
-            PlayerBackgroundStyle.GRADIENT -> Color.Black
+            PlayerBackgroundStyle.BLUR, PlayerBackgroundStyle.GRADIENT ->
+                if (isLightBackground) Color.White else Color.Black
         },
         label = "icBackgroundColor"
     )
@@ -426,7 +437,9 @@ fun BottomSheetPlayer(
         playerBackground == PlayerBackgroundStyle.BLUR || 
         playerBackground == PlayerBackgroundStyle.GRADIENT -> {
             when (playerButtonsStyle) {
-                PlayerButtonsStyle.DEFAULT -> Pair(Color.White, Color.Black)
+                PlayerButtonsStyle.DEFAULT ->
+                    if (isLightBackground) Pair(Color.Black, Color.White)
+                    else Pair(Color.White, Color.Black)
                 PlayerButtonsStyle.PRIMARY -> Pair(
                     MaterialTheme.colorScheme.primary,
                     MaterialTheme.colorScheme.onPrimary
@@ -459,10 +472,15 @@ fun BottomSheetPlayer(
         playerBackground == PlayerBackgroundStyle.BLUR || 
         playerBackground == PlayerBackgroundStyle.GRADIENT -> {
             when (playerButtonsStyle) {
-                PlayerButtonsStyle.DEFAULT -> Pair(
-                    Color.White.copy(alpha = 0.2f), 
-                    Color.White
-                )
+                PlayerButtonsStyle.DEFAULT ->
+                    if (isLightBackground) Pair(
+                        Color.Black.copy(alpha = 0.2f),
+                        Color.Black
+                    )
+                    else Pair(
+                        Color.White.copy(alpha = 0.2f), 
+                        Color.White
+                    )
                 PlayerButtonsStyle.PRIMARY -> Pair(
                     MaterialTheme.colorScheme.primaryContainer,
                     MaterialTheme.colorScheme.onPrimaryContainer
@@ -1890,4 +1908,14 @@ private fun extractAccentColor(palette: Palette): Color {
     hsv[1] = (hsv[1] * 1.2f).coerceAtMost(1.0f)
     hsv[2] = hsv[2].coerceIn(0.65f, 0.95f)
     return Color(android.graphics.Color.HSVToColor(hsv))
+}
+
+private fun isBackgroundLight(palette: Palette): Boolean {
+    val swatch = palette.dominantSwatch ?: return false
+    val rgb = swatch.rgb
+    val r = android.graphics.Color.red(rgb) / 255f
+    val g = android.graphics.Color.green(rgb) / 255f
+    val b = android.graphics.Color.blue(rgb) / 255f
+    val luminance = 0.299f * r + 0.587f * g + 0.114f * b
+    return luminance > 0.5f
 }

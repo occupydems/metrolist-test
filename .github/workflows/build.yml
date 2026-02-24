@@ -102,6 +102,28 @@ jobs:
           name: app-arm64-${{ matrix.glass }}-release
           path: app/build/outputs/apk/arm64Foss${{ matrix.glass == 'agsl' && 'Agsl' || 'Classic' }}/release/out/*
 
+  release:
+    name: Create Release
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          sparse-checkout: app/build.gradle.kts
+          sparse-checkout-cone-mode: false
+
+      - name: Download AGSL APK
+        uses: actions/download-artifact@v4
+        with:
+          name: app-arm64-agsl-release
+          path: artifacts/agsl
+
+      - name: Download Classic APK
+        uses: actions/download-artifact@v4
+        with:
+          name: app-arm64-classic-release
+          path: artifacts/classic
+
       - name: Get version info
         id: version
         run: |
@@ -111,20 +133,25 @@ jobs:
           echo "version_name=${VERSION_NAME}" >> "$GITHUB_OUTPUT"
           echo "short_sha=${SHORT_SHA}" >> "$GITHUB_OUTPUT"
           echo "timestamp=${TIMESTAMP}" >> "$GITHUB_OUTPUT"
-          echo "tag=v${VERSION_NAME}-${{ matrix.glass }}-${TIMESTAMP}" >> "$GITHUB_OUTPUT"
+          echo "tag=v${VERSION_NAME}-${TIMESTAMP}" >> "$GITHUB_OUTPUT"
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ steps.version.outputs.tag }}
-          name: Metrolist ${{ steps.version.outputs.version_name }} ${{ matrix.glass }} (${{ steps.version.outputs.timestamp }})
+          name: Metrolist ${{ steps.version.outputs.version_name }} (${{ steps.version.outputs.timestamp }})
           body: |
             Automated build from commit ${{ github.sha }}
             Branch: ${{ github.ref_name }}
-            Glass effect: ${{ matrix.glass }}
-          files: app/build/outputs/apk/arm64Foss${{ matrix.glass == 'agsl' && 'Agsl' || 'Classic' }}/release/out/app-arm64-${{ matrix.glass }}-release.apk
+
+            **Downloads:**
+            - `app-arm64-agsl-release.apk` — AGSL liquid glass effect (recommended, requires Android 13+)
+            - `app-arm64-classic-release.apk` — Classic lens effect (works on all supported devices)
+          files: |
+            artifacts/agsl/app-arm64-agsl-release.apk
+            artifacts/classic/app-arm64-classic-release.apk
           draft: false
           prerelease: false
-          make_latest: ${{ matrix.glass == 'agsl' }}
+          make_latest: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
