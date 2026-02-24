@@ -1197,10 +1197,12 @@ private fun PlayerQueueButton(
         modifier = appliedModifier,
         contentAlignment = Alignment.Center
     ) {
+        val activeContrastColor = if (textButtonColor.luminance() > 0.5f) Color.Black else Color.White
+
         if (text != null) {
             Text(
                 text = text,
-                color = iconButtonColor.copy(alpha = if (enabled) 1f else 0.6f),
+                color = (if (isActive) activeContrastColor else iconButtonColor).copy(alpha = if (enabled) 1f else 0.6f),
                 fontSize = 10.sp,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
@@ -1211,7 +1213,7 @@ private fun PlayerQueueButton(
             )
         } else {
             val baseTint = if (isActive) {
-                iconButtonColor
+                activeContrastColor
             } else {
                 iconButtonColor.copy(alpha = 0.7f)
             }
