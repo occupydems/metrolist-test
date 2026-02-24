@@ -220,12 +220,6 @@ fun BottomSheetPlayer(
     var isLightBackground by remember { mutableStateOf(false) }
     val luminanceCache = remember { mutableMapOf<String, Boolean>() }
 
-    var delayedMediaMetadata by remember { mutableStateOf(mediaMetadata) }
-    LaunchedEffect(mediaMetadata) {
-        delay(300)
-        delayedMediaMetadata = mediaMetadata
-    }
-
     val shouldUseDarkButtonColors = remember(playerBackground, useDarkTheme, isLightBackground) {
         when (playerBackground) {
             PlayerBackgroundStyle.BLUR, PlayerBackgroundStyle.GRADIENT -> !isLightBackground
@@ -278,6 +272,11 @@ fun BottomSheetPlayer(
 
     val playbackState by playerConnection.playbackState.collectAsState()
     val mediaMetadata by playerConnection.mediaMetadata.collectAsState()
+    var delayedMediaMetadata by remember { mutableStateOf(mediaMetadata) }
+    LaunchedEffect(mediaMetadata) {
+        delay(300)
+        delayedMediaMetadata = mediaMetadata
+    }
     val currentSong by playerConnection.currentSong.collectAsState(initial = null)
     val automix by playerConnection.service.automixItems.collectAsState()
     val repeatMode by playerConnection.repeatMode.collectAsState()
