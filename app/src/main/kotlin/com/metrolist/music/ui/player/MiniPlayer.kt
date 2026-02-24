@@ -310,7 +310,7 @@ private fun NewMiniPlayer(
                             effects = {
                                 blur(0f)
                                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                                    val refractionHeightPx = with(density) { 11.dp.toPx() }
+                                    val refractionHeightPx = with(density) { 28.dp.toPx() }
                                     val refractionAmountPx = with(density) { 67.dp.toPx() }
                                     val eccentricFactor = 0.5f
                                     val dispersionIntensity = 1.0f
