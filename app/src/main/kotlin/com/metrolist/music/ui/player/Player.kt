@@ -923,7 +923,7 @@ fun BottomSheetPlayer(
                                         painter = painterResource(R.drawable.fullscreen),
                                         contentDescription = null,
                                         modifier = Modifier.size(20.dp),
-                                        tint = TextBackgroundColor
+                                        tint = iconButtonColor
                                     )
                                 }
                             } else {
@@ -949,7 +949,7 @@ fun BottomSheetPlayer(
                                         painter = painterResource(R.drawable.share),
                                         contentDescription = null,
                                         modifier = Modifier.size(20.dp),
-                                        tint = TextBackgroundColor
+                                        tint = iconButtonColor
                                     )
                                 }
                             }
@@ -986,7 +986,7 @@ fun BottomSheetPlayer(
                                         painter = painterResource(R.drawable.more_horiz),
                                         contentDescription = null,
                                         modifier = Modifier.size(20.dp),
-                                        tint = TextBackgroundColor
+                                        tint = iconButtonColor
                                     )
                                 }
                             } else {
@@ -1006,7 +1006,7 @@ fun BottomSheetPlayer(
                                         ),
                                         contentDescription = null,
                                         modifier = Modifier.size(20.dp),
-                                        tint = TextBackgroundColor
+                                        tint = iconButtonColor
                                     )
                                 }
                             }

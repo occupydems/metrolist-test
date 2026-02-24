@@ -367,15 +367,11 @@ fun Queue(
                             },
                         contentAlignment = Alignment.Center
                     ) {
-                        val menuTint = when (playerBackground) {
-                            PlayerBackgroundStyle.BLUR, PlayerBackgroundStyle.GRADIENT -> Color.White
-                            PlayerBackgroundStyle.DEFAULT -> MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
-                        }
                         Icon(
                             painter = painterResource(id = R.drawable.more_vert),
                             contentDescription = null,
                             modifier = Modifier.size(iconSize),
-                            tint = menuTint
+                            tint = iconButtonColor
                         )
                     }
                 }
@@ -405,12 +401,12 @@ fun Queue(
                                 painter = painterResource(id = R.drawable.queue_music),
                                 contentDescription = null,
                                 modifier = Modifier.size(20.dp),
-                                tint = TextBackgroundColor
+                                tint = iconButtonColor
                             )
                             Spacer(modifier = Modifier.width(6.dp))
                             Text(
                                 text = stringResource(id = R.string.queue),
-                                color = TextBackgroundColor,
+                                color = iconButtonColor,
                                 maxLines = 1,
                                 overflow = TextOverflow.Ellipsis,
                                 textAlign = TextAlign.Center,
@@ -441,7 +437,7 @@ fun Queue(
                                 painter = painterResource(id = R.drawable.bedtime),
                                 contentDescription = null,
                                 modifier = Modifier.size(20.dp),
-                                tint = TextBackgroundColor
+                                tint = iconButtonColor
                             )
                             Spacer(modifier = Modifier.width(6.dp))
                             AnimatedContent(
@@ -451,7 +447,7 @@ fun Queue(
                                 if (enabled) {
                                     Text(
                                         text = makeTimeString(sleepTimerTimeLeft),
-                                        color = TextBackgroundColor,
+                                        color = iconButtonColor,
                                         maxLines = 1,
                                         overflow = TextOverflow.Ellipsis,
                                         textAlign = TextAlign.Center,
@@ -460,7 +456,7 @@ fun Queue(
                                 } else {
                                     Text(
                                         text = stringResource(id = R.string.sleep_timer),
-                                        color = TextBackgroundColor,
+                                        color = iconButtonColor,
                                         maxLines = 1,
                                         overflow = TextOverflow.Ellipsis,
                                         textAlign = TextAlign.Center,
@@ -486,12 +482,12 @@ fun Queue(
                                 painter = painterResource(id = R.drawable.lyrics),
                                 contentDescription = null,
                                 modifier = Modifier.size(20.dp),
-                                tint = TextBackgroundColor
+                                tint = iconButtonColor
                             )
                             Spacer(modifier = Modifier.width(6.dp))
                             Text(
                                 text = stringResource(R.string.lyrics),
-                                color = TextBackgroundColor,
+                                color = iconButtonColor,
                                 maxLines = 1,
                                 overflow = TextOverflow.Ellipsis,
                                 textAlign = TextAlign.Center,
@@ -1217,12 +1213,7 @@ private fun PlayerQueueButton(
             val baseTint = if (isActive) {
                 iconButtonColor
             } else {
-                when (playerBackground) {
-                    PlayerBackgroundStyle.BLUR, PlayerBackgroundStyle.GRADIENT ->
-                        Color.White
-                    PlayerBackgroundStyle.DEFAULT ->
-                        MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
-                }
+                iconButtonColor.copy(alpha = 0.7f)
             }
             val finalTint = if (enabled) baseTint else baseTint.copy(alpha = 0.5f)
             Icon(
