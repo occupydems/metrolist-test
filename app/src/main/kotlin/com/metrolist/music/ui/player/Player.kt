@@ -54,7 +54,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.systemBars
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.windowInsetsPadding
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ContainedLoadingIndicator
@@ -166,7 +165,6 @@ import com.metrolist.music.ui.utils.ShowMediaInfo
 import com.metrolist.music.ui.utils.ShowOffsetDialog
 import com.metrolist.music.utils.makeTimeString
 import com.metrolist.music.utils.rememberEnumPreference
-import com.kyant.backdrop.Backdrop
 import com.metrolist.music.utils.rememberPreference
 import dagger.hilt.android.EntryPointAccessors
 import kotlinx.coroutines.Dispatchers
@@ -177,6 +175,7 @@ import kotlinx.coroutines.withContext
 import kotlin.math.max
 import kotlin.math.roundToInt
 import com.metrolist.music.ui.component.Icon as MIcon
+import com.kyant.backdrop.Backdrop
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -821,7 +820,7 @@ fun BottomSheetPlayer(
                                 mediaMetadata.artists.forEachIndexed { index, artist ->
                                     val tag = "artist_${artist.id.orEmpty()}"
                                     pushStringAnnotation(tag = tag, annotation = artist.id.orEmpty())
-                                    withStyle(SpanStyle(color = TextBackgroundColor.copy(alpha = 0.65f), fontSize = 16.sp)) {
+                                    withStyle(SpanStyle(color = TextBackgroundColor, fontSize = 16.sp)) {
                                         append(artist.name)
                                     }
                                     pop()
@@ -839,7 +838,7 @@ fun BottomSheetPlayer(
                                 var clickOffset by remember { mutableStateOf<Offset?>(null) }
                                 Text(
                                     text = annotatedString,
-                                    style = MaterialTheme.typography.titleMedium.copy(color = TextBackgroundColor.copy(alpha = 0.65f)),
+                                    style = MaterialTheme.typography.titleMedium.copy(color = TextBackgroundColor),
                                     maxLines = 1,
                                     overflow = TextOverflow.Ellipsis,
                                     onTextLayout = { layoutResult = it },
@@ -901,8 +900,17 @@ fun BottomSheetPlayer(
                 Spacer(modifier = Modifier.width(12.dp))
 
                 if (useNewPlayerDesign) {
-                    val frostedCircleColor = TextBackgroundColor.copy(alpha = 0.15f)
-                    val circleShape = CircleShape
+                    val shareShape = RoundedCornerShape(
+                        topStart = 50.dp, bottomStart = 50.dp,
+                        topEnd = 3.dp, bottomEnd = 3.dp
+                    )
+
+                    val favShape = RoundedCornerShape(
+                        topStart = 3.dp, bottomStart = 3.dp,
+                        topEnd = 50.dp, bottomEnd = 50.dp
+                    )
+
+                    val middleShape = RoundedCornerShape(3.dp)
 
                     Row(
                         horizontalArrangement = Arrangement.spacedBy(6.dp),
@@ -912,17 +920,17 @@ fun BottomSheetPlayer(
                             if (showLyrics) {
                                 FilledIconButton(
                                     onClick = { isFullScreen = !isFullScreen },
-                                    shape = circleShape,
+                                    shape = shareShape,
                                     colors = IconButtonDefaults.filledIconButtonColors(
-                                        containerColor = frostedCircleColor,
-                                        contentColor = TextBackgroundColor,
+                                        containerColor = textButtonColor,
+                                        contentColor = iconButtonColor,
                                     ),
-                                    modifier = Modifier.size(36.dp),
+                                    modifier = Modifier.size(42.dp),
                                 ) {
                                     Icon(
                                         painter = painterResource(R.drawable.fullscreen),
                                         contentDescription = null,
-                                        modifier = Modifier.size(20.dp)
+                                        modifier = Modifier.size(24.dp)
                                     )
                                 }
                             } else {
@@ -938,17 +946,17 @@ fun BottomSheetPlayer(
                                         }
                                         context.startActivity(Intent.createChooser(intent, null))
                                     },
-                                    shape = circleShape,
+                                    shape = shareShape,
                                     colors = IconButtonDefaults.filledIconButtonColors(
-                                        containerColor = frostedCircleColor,
-                                        contentColor = TextBackgroundColor,
+                                        containerColor = textButtonColor,
+                                        contentColor = iconButtonColor,
                                     ),
-                                    modifier = Modifier.size(36.dp),
+                                    modifier = Modifier.size(42.dp),
                                 ) {
                                     Icon(
                                         painter = painterResource(R.drawable.share),
                                         contentDescription = null,
-                                        modifier = Modifier.size(20.dp)
+                                        modifier = Modifier.size(24.dp)
                                     )
                                 }
                             }
@@ -975,28 +983,28 @@ fun BottomSheetPlayer(
                                             )
                                         }
                                     },
-                                    shape = circleShape,
+                                    shape = favShape,
                                     colors = IconButtonDefaults.filledIconButtonColors(
-                                        containerColor = frostedCircleColor,
-                                        contentColor = TextBackgroundColor,
+                                        containerColor = textButtonColor,
+                                        contentColor = iconButtonColor,
                                     ),
-                                    modifier = Modifier.size(36.dp),
+                                    modifier = Modifier.size(42.dp),
                                 ) {
                                     Icon(
                                         painter = painterResource(R.drawable.more_horiz),
                                         contentDescription = null,
-                                        modifier = Modifier.size(20.dp)
+                                        modifier = Modifier.size(24.dp)
                                     )
                                 }
                             } else {
                                 FilledIconButton(
                                     onClick = playerConnection::toggleLike,
-                                    shape = circleShape,
+                                    shape = favShape,
                                     colors = IconButtonDefaults.filledIconButtonColors(
-                                        containerColor = frostedCircleColor,
-                                        contentColor = TextBackgroundColor,
+                                        containerColor = textButtonColor,
+                                        contentColor = iconButtonColor,
                                     ),
-                                    modifier = Modifier.size(36.dp),
+                                    modifier = Modifier.size(42.dp),
                                 ) {
                                     Icon(
                                         painter = painterResource(
@@ -1005,7 +1013,7 @@ fun BottomSheetPlayer(
                                             else R.drawable.favorite_border
                                         ),
                                         contentDescription = null,
-                                        modifier = Modifier.size(20.dp)
+                                        modifier = Modifier.size(24.dp)
                                     )
                                 }
                             }
@@ -1229,6 +1237,8 @@ fun BottomSheetPlayer(
                     )
                 }
             }
+
+            Spacer(Modifier.height(4.dp))
 
             Row(
                 horizontalArrangement = Arrangement.SpaceBetween,

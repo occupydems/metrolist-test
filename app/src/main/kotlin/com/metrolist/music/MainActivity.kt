@@ -782,11 +782,11 @@ class MainActivity : ComponentActivity() {
                     LocalListenTogetherManager provides listenTogetherManager,
                 ) {
 
-                    Box(modifier = Modifier.fillMaxSize()) {
+                                        Box(modifier = Modifier.fillMaxSize()) {
                         Box(modifier = Modifier.fillMaxSize().layerBackdrop(glassBackdrop)) {
-                            Scaffold(
-                                snackbarHost = { SnackbarHost(snackbarHostState) },
-                                topBar = {
+Scaffold(
+                        snackbarHost = { SnackbarHost(snackbarHostState) },
+                        topBar = {
                             AnimatedVisibility(
                                 visible = shouldShowTopBar,
                                 enter = fadeIn(animationSpec = tween(durationMillis = 300)),
@@ -866,8 +866,21 @@ class MainActivity : ComponentActivity() {
                                     )
                                 }
                             }
-                                },
-                                bottomBar = {
+                        }
+
+                        // Liquid-glass mini player overlay (drawn after backdrop capture)
+                        if (currentRoute != "wrapped") {
+                            BottomSheetPlayer(
+                                state = playerBottomSheetState,
+                                navController = navController,
+                                pureBlack = pureBlack,
+                                backdrop = glassBackdrop,
+                            )
+                        }
+                    }
+
+                        },
+                        bottomBar = {
                             val onNavItemClick: (Screens, Boolean) -> Unit = remember(navController, coroutineScope, topAppBarScrollBehavior, playerBottomSheetState) {
                                 { screen: Screens, isSelected: Boolean ->
                                     if (playerBottomSheetState.isExpanded) {
@@ -944,13 +957,25 @@ class MainActivity : ComponentActivity() {
                                             }
                                             .background(baseBg)
                                     )
+
+                                Box(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .align(Alignment.BottomCenter)
+                                        .height(bottomInsetDp)
+                                        // Use graphicsLayer for background color changes
+                                        .graphicsLayer {
+                                            val progress = playerBottomSheetState.progress
+                                            alpha = if (progress > 0f || (useNewMiniPlayerDesign && !shouldShowNavigationBar)) 0f else 1f
+                                        }
+                                        .background(baseBg)
+                                )
                             }
-                                }
-                                },
-                                modifier = Modifier
-                                    .fillMaxSize()
-                                    .nestedScroll(topAppBarScrollBehavior.nestedScrollConnection)
-                            ) {
+                        },
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .nestedScroll(topAppBarScrollBehavior.nestedScrollConnection)
+                    ) {
                         Row(Modifier.fillMaxSize()) {
                             val onRailItemClick: (Screens, Boolean) -> Unit = remember(navController, coroutineScope, topAppBarScrollBehavior, playerBottomSheetState) {
                                 { screen: Screens, isSelected: Boolean ->
@@ -1071,17 +1096,6 @@ class MainActivity : ComponentActivity() {
                         }
                     }
 
-                            // Liquid-glass mini player overlay (drawn after backdrop capture)
-                            if (currentRoute != "wrapped") {
-                                BottomSheetPlayer(
-                                    state = playerBottomSheetState,
-                                    navController = navController,
-                                    pureBlack = pureBlack,
-                                    backdrop = glassBackdrop,
-                                )
-                            }
-                        }
-
                     BottomSheetMenu(
                         state = LocalMenuState.current,
                         modifier = Modifier.align(Alignment.BottomCenter)
@@ -1127,7 +1141,6 @@ class MainActivity : ComponentActivity() {
                                 }
                             }
                         }
-                    }
                     }
                 }
             }

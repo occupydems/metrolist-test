@@ -20,7 +20,7 @@ android {
     ndkVersion = "27.0.12077973"
 
     defaultConfig {
-        applicationId = "com.metrolist.music"
+        applicationId = "com.metrolist.music2"
         minSdk = 26
         targetSdk = 36
         versionCode = 141
@@ -96,9 +96,9 @@ android {
     signingConfigs {
         create("persistentDebug") {
             storeFile = file("persistent-debug.keystore")
-            storePassword = System.getenv("DEBUG_STORE_PASSWORD") ?: "android"
-            keyAlias = System.getenv("DEBUG_KEY_ALIAS") ?: "androiddebugkey"
-            keyPassword = System.getenv("DEBUG_KEY_PASSWORD") ?: "android"
+            storePassword = "android"
+            keyAlias = "androiddebugkey"
+            keyPassword = "android"
         }
         create("release") {
             storeFile = file("keystore/release.keystore")
@@ -107,9 +107,9 @@ android {
             keyPassword = System.getenv("KEY_PASSWORD")
         }
         getByName("debug") {
-            keyAlias = System.getenv("DEBUG_KEY_ALIAS") ?: "androiddebugkey"
-            keyPassword = System.getenv("DEBUG_KEY_PASSWORD") ?: "android"
-            storePassword = System.getenv("DEBUG_STORE_PASSWORD") ?: "android"
+            keyAlias = "androiddebugkey"
+            keyPassword = "android"
+            storePassword = "android"
             storeFile = file("${System.getProperty("user.home")}/.android/debug.keystore")
         }
     }
@@ -226,7 +226,7 @@ tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile>().configureEach 
 }
 
 dependencies {
-    implementation("com.github.Kyant0:AndroidLiquidGlass:1.0.0-rc01")
+    implementation("io.github.kyant0:backdrop:1.0.6")
     implementation(libs.guava)
     implementation(libs.coroutines.guava)
     implementation(libs.concurrent.futures)

@@ -57,14 +57,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.platform.LocalDensity
-import com.kyant.backdrop.Backdrop
-import com.kyant.backdrop.drawBackdrop
-import android.graphics.RenderEffect
-import android.graphics.RuntimeShader
-import android.os.Build
-import com.kyant.backdrop.effects.blur
-import com.kyant.backdrop.effects.effect
 import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
@@ -110,6 +102,12 @@ import kotlinx.coroutines.launch
 import kotlin.math.absoluteValue
 import kotlin.math.roundToInt
 import com.metrolist.music.ui.component.Icon as MIcon
+import androidx.compose.ui.platform.LocalDensity
+import com.kyant.backdrop.Backdrop
+import com.kyant.backdrop.drawBackdrop
+import com.kyant.backdrop.effects.blur
+import com.kyant.backdrop.effects.lens
+import com.kyant.backdrop.effects.vibrancy
 
 /**
  * Stable wrapper for progress state - reads values only during draw phase
@@ -142,7 +140,6 @@ fun MiniPlayer(
     if (useNewMiniPlayerDesign) {
         NewMiniPlayer(
             progressState = progressState,
-            backdrop = backdrop,
             modifier = modifier
         )
     } else {
@@ -162,7 +159,6 @@ fun MiniPlayer(
 @Composable
 private fun NewMiniPlayer(
     progressState: ProgressState,
-    backdrop: Backdrop? = null,
     modifier: Modifier = Modifier
 ) {
     val playerConnection = LocalPlayerConnection.current ?: return
@@ -221,10 +217,13 @@ private fun NewMiniPlayer(
         (600 / (1f + kotlin.math.exp(-(-11.44748 * swipeSensitivity + 9.04945)))).roundToInt()
     }
     
-    val density = LocalDensity.current
-
     // Memoize colors
-    val backgroundColor = if (pureBlack && useDarkTheme) Color.Black else MaterialTheme.colorScheme.surfaceContainer
+        val density = LocalDensity.current
+    val refractionHeightPx = with(density) { 20.dp.toPx() }
+    val refractionAmountPx = with(density) { (-66).dp.toPx() }
+    val blurRadiusPx = with(density) { 0.dp.toPx() }
+
+val backgroundColor = if (pureBlack && useDarkTheme) Color.Black else MaterialTheme.colorScheme.surfaceContainer
     val primaryColor = MaterialTheme.colorScheme.primary
     val outlineColor = MaterialTheme.colorScheme.outline
     val onSurfaceColor = MaterialTheme.colorScheme.onSurface
@@ -308,110 +307,13 @@ private fun NewMiniPlayer(
                             backdrop = backdrop,
                             shape = { RoundedCornerShape(32.dp) },
                             effects = {
-                                blur(0f)
-                                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                                    val refractionHeightPx = with(density) { 11.dp.toPx() }
-                                    val refractionAmountPx = with(density) { 67.dp.toPx() }
-                                    val eccentricFactor = 0.5f
-                                    val dispersionIntensity = 1.0f
-
-                                    val shaderString = """
-                                        uniform shader content;
-                                        uniform float2 size;
-                                        uniform float2 offset;
-                                        uniform float4 cornerRadii;
-                                        uniform float refractionHeight;
-                                        uniform float refractionAmount;
-                                        uniform float depthEffect;
-                                        uniform float chromaticAberration;
-
-                                        float radiusAt(float2 coord, float4 radii) {
-                                            if (coord.x >= 0.0) {
-                                                if (coord.y <= 0.0) return radii.y;
-                                                else return radii.z;
-                                            } else {
-                                                if (coord.y <= 0.0) return radii.x;
-                                                else return radii.w;
-                                            }
-                                        }
-
-                                        float sdRoundedRect(float2 coord, float2 halfSize, float radius) {
-                                            float2 cornerCoord = abs(coord) - (halfSize - float2(radius));
-                                            float outside = length(max(cornerCoord, 0.0)) - radius;
-                                            float inside = min(max(cornerCoord.x, cornerCoord.y), 0.0);
-                                            return outside + inside;
-                                        }
-
-                                        float2 gradSdRoundedRect(float2 coord, float2 halfSize, float radius) {
-                                            float2 cornerCoord = abs(coord) - (halfSize - float2(radius));
-                                            if (cornerCoord.x >= 0.0 || cornerCoord.y >= 0.0) {
-                                                return sign(coord) * normalize(max(cornerCoord, 0.0));
-                                            } else {
-                                                float gradX = step(cornerCoord.y, cornerCoord.x);
-                                                return sign(coord) * float2(gradX, 1.0 - gradX);
-                                            }
-                                        }
-
-                                        float circleMap(float x) {
-                                            return 1.0 - sqrt(1.0 - x * x);
-                                        }
-
-                                        half4 main(float2 coord) {
-                                            float2 halfSize = size * 0.5;
-                                            float2 centeredCoord = (coord + offset) - halfSize;
-                                            float radius = radiusAt(coord, cornerRadii);
-                                            float sd = sdRoundedRect(centeredCoord, halfSize, radius);
-                                            if (-sd >= refractionHeight) {
-                                                return content.eval(coord);
-                                            }
-                                            sd = min(sd, 0.0);
-                                            float d = circleMap(1.0 - -sd / refractionHeight) * refractionAmount;
-                                            float gradRadius = min(radius * 1.5, min(halfSize.x, halfSize.y));
-                                            float2 grad = normalize(gradSdRoundedRect(centeredCoord, halfSize, gradRadius) + depthEffect * normalize(centeredCoord));
-                                            float2 refractedCoord = coord + d * grad;
-                                            float dispersionAmount = chromaticAberration * ((centeredCoord.x * centeredCoord.y) / (halfSize.x * halfSize.y));
-                                            float2 dispersedCoord = d * grad * dispersionAmount;
-                                            half4 color = half4(0.0);
-                                            half4 red = content.eval(refractedCoord + dispersedCoord);
-                                            color.r += red.r / 3.5;
-                                            color.a += red.a / 7.0;
-                                            half4 orange = content.eval(refractedCoord + dispersedCoord * (2.0 / 3.0));
-                                            color.r += orange.r / 3.5;
-                                            color.g += orange.g / 7.0;
-                                            color.a += orange.a / 7.0;
-                                            half4 yellow = content.eval(refractedCoord + dispersedCoord * (1.0 / 3.0));
-                                            color.r += yellow.r / 3.5;
-                                            color.g += yellow.g / 3.5;
-                                            color.a += yellow.a / 7.0;
-                                            half4 green = content.eval(refractedCoord);
-                                            color.g += green.g / 3.5;
-                                            color.a += green.a / 7.0;
-                                            half4 cyan = content.eval(refractedCoord - dispersedCoord * (1.0 / 3.0));
-                                            color.g += cyan.g / 3.5;
-                                            color.b += cyan.b / 3.0;
-                                            color.a += cyan.a / 7.0;
-                                            half4 blue = content.eval(refractedCoord - dispersedCoord * (2.0 / 3.0));
-                                            color.b += blue.b / 3.0;
-                                            color.a += blue.a / 7.0;
-                                            half4 purple = content.eval(refractedCoord - dispersedCoord);
-                                            color.r += purple.r / 7.0;
-                                            color.b += purple.b / 3.0;
-                                            color.a += purple.a / 7.0;
-                                            return color;
-                                        }
-                                    """.trimIndent()
-
-                                    val shader = RuntimeShader(shaderString)
-                                    val cornerRadiusPx = with(density) { 32.dp.toPx() }
-                                    shader.setFloatUniform("size", size.width, size.height)
-                                    shader.setFloatUniform("offset", -padding, -padding)
-                                    shader.setFloatUniform("cornerRadii", floatArrayOf(cornerRadiusPx, cornerRadiusPx, cornerRadiusPx, cornerRadiusPx))
-                                    shader.setFloatUniform("refractionHeight", refractionHeightPx)
-                                    shader.setFloatUniform("refractionAmount", -refractionAmountPx)
-                                    shader.setFloatUniform("depthEffect", eccentricFactor)
-                                    shader.setFloatUniform("chromaticAberration", dispersionIntensity)
-                                    effect(RenderEffect.createRuntimeShaderEffect(shader, "content"))
-                                }
+                                vibrancy()
+                                if (blurRadiusPx > 0f) blur(blurRadiusPx)
+                                lens(
+                                    refractionHeight = refractionHeightPx,
+                                    refractionAmount = refractionAmountPx,
+                                    chromaticAberration = true
+                                )
                             },
                             onDrawSurface = {
                                 drawRect(backgroundColor.copy(alpha = 0.18f))
