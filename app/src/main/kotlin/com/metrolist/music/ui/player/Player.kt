@@ -502,12 +502,16 @@ fun BottomSheetPlayer(
         }
     }
 
-    val frostedIconTint = when {
-        playerBackground == PlayerBackgroundStyle.BLUR ||
-        playerBackground == PlayerBackgroundStyle.GRADIENT ->
-            if (isLightBackground) Color.White else Color.Black
-        else -> iconButtonColor
-    }
+    val frostedIconTint by animateColorAsState(
+        targetValue = when {
+            playerBackground == PlayerBackgroundStyle.BLUR ||
+            playerBackground == PlayerBackgroundStyle.GRADIENT ->
+                if (isLightBackground) Color.White else Color.Black
+            else -> iconButtonColor
+        },
+        animationSpec = tween(durationMillis = 600),
+        label = "frostedIconTint"
+    )
 
     val download by LocalDownloadUtil.current.getDownload(mediaMetadata?.id ?: "")
         .collectAsState(initial = null)
